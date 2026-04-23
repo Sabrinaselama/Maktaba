@@ -6,31 +6,37 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import com.ElOuedUniv.maktaba.presentation.book.BookListView
 import com.ElOuedUniv.maktaba.presentation.category.CategoryListView
 import com.ElOuedUniv.maktaba.presentation.theme.MaktabaTheme
+import androidx.compose.runtime.saveable.rememberSaveable
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-    
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        
+
         setContent {
             MaktabaTheme {
-                var showCategories by remember { mutableStateOf(false) }
-                
+
+                var showCategories by rememberSaveable { mutableStateOf(false) }
+
                 if (showCategories) {
                     CategoryListView(
-                        onBackClick = { showCategories = false }
+                        onBackClick = {
+                            showCategories = false
+                        }
                     )
                 } else {
                     BookListView(
-                        onCategoriesClick = { showCategories = true }
+                        onCategoriesClick = {
+                            showCategories = true
+                        }
                     )
                 }
             }
