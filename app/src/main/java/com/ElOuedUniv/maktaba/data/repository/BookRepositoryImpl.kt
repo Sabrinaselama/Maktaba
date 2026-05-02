@@ -1,27 +1,39 @@
 package com.ElOuedUniv.maktaba.data.repository
 
 import com.ElOuedUniv.maktaba.data.model.Book
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.flow
+import javax.inject.Inject
 
-class BookRepositoryImpl : BookRepository {
+class BookRepositoryImpl @Inject constructor() : BookRepository {
 
-    private val booksList = listOf(Book(isbn = "978-0132350884", title = "Clean Code", nbPages = 464),
-    Book(isbn = "978-0201616224", title = "The Pragmatic Programmer", nbPages = 352),
-    Book(isbn = "978-0201633610", title = "Design Patterns", nbPages =395 ),
-    Book(isbn = "978-0201485677", title = "Refactoring", nbPages =448 ),
-    Book(isbn="978-1491950357", title="Learning Python", nbPages=1648),
-    Book( isbn="978-0596007126", title="Head First Design Patterns", nbPages=694),
-    Book(isbn="978-0131103627", title="The C Programming Language", nbPages=272),
-    Book(isbn="978-0134685991", title="Effective Java", nbPages=416),
-    Book(isbn="978-0596007126", title="Head First Design Patterns", nbPages=6)
-
+    private val _booksList = listOf(
+        Book(isbn = "11111", title = "Clean Code", nbPages = 10),
+        Book(isbn = "22222", title = "The Pragmatic Programmer", nbPages = 0),
+        Book(isbn = "33333", title = "Design Patterns", nbPages = 0),
+        Book(isbn = "44444", title = "Refactoring", nbPages = 0),
+        Book(isbn = "55555", title = "Head First Design Patterns", nbPages = 0)
     )
-    
-    override fun getAllBooks(): List<Book> {
-        return booksList
+
+    private val booksFlow = MutableSharedFlow<List<Book>>(replay = 1).apply {
+        tryEmit(_booksList)
+    }
+
+    override fun getAllBooks(): Flow<List<Book>> = flow {
+        delay(2000) // Simulate delay
+        emitAll(booksFlow)
     }
 
     override fun getBookByIsbn(isbn: String): Book? {
-        return booksList.find { it.isbn == isbn }
+        return _booksList.find { it.isbn == isbn }
     }
-}
 
+    override fun addBook(book: Book) {
+            val currentList = booksFlow.replayCache.firstOrNull() ?: emptyList()
+            val updatedList = currentList + book
+            booksFlow.tryEmit(updatedList)
+        }        // Hint: This is a bit tricky with sharedFlow, think about how to update it.
+    }
