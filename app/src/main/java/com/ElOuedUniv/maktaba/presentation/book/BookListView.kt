@@ -24,16 +24,19 @@ fun BookListView(
 
     val uiState by viewModel.uiState.collectAsState()
 
-
     // 🟡 Dialog (Add Book)
     if (uiState.isAddingBook) {
         AddBookDialog(
             onDismiss = {
                 viewModel.onAction(BookUiAction.OnDismissAddBook)
             },
-            onConfirm = { title, isbn, pages ->
+            onConfirm = { title, isbn, nbPages ->
                 viewModel.onAction(
-                    BookUiAction.OnAddBookConfirm(title, isbn, pages)
+                    BookUiAction.OnAddBookConfirm(
+                        title = title,
+                        isbn = isbn,
+                        nbPages = nbPages
+                    )
                 )
             }
         )
@@ -58,13 +61,11 @@ fun BookListView(
             )
         },
 
-        // 🟣 FAB (زر +)
+        // 🟣 FAB
         floatingActionButton = {
-            FloatingActionButton(
-                onClick = {
-                    viewModel.onAction(BookUiAction.OnAddBookClick)
-                }
-            ) {
+            FloatingActionButton(onClick = {
+                viewModel.onAction(BookUiAction.OnAddBookClick)
+            }) {
                 Icon(
                     imageVector = Icons.Default.Add,
                     contentDescription = "Add Book"
@@ -79,26 +80,21 @@ fun BookListView(
                 .padding(paddingValues)
         ) {
 
-            // 🔵 Loading
             if (uiState.isLoading) {
                 CircularProgressIndicator(
                     modifier = Modifier.align(Alignment.Center)
                 )
-            }
-
-            // 🟢 Empty
-            else if (uiState.books.isEmpty()) {
-                EmptyBooksMessage(
-                    modifier = Modifier.align(Alignment.Center)
-                )
-            }
-
-            // 📚 Books list
-            else {
-                BookList(
-                    books = uiState.books,
-                    modifier = Modifier.fillMaxSize()
-                )
+            } else {
+                if (uiState.books.isEmpty()) {
+                    EmptyBooksMessage(
+                        modifier = Modifier.align(Alignment.Center)
+                    )
+                } else {
+                    BookList(
+                        books = uiState.books,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
             }
         }
     }
@@ -136,6 +132,7 @@ fun BookItem(book: Book) {
             )
 
             Spacer(modifier = Modifier.height(8.dp))
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
