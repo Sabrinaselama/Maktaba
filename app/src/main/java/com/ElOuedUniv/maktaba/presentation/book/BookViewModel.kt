@@ -91,8 +91,4 @@ class BookViewModel @Inject constructor(
     fun refreshBooks() {
         loadBooks()
     }
-
 }
-
-
-

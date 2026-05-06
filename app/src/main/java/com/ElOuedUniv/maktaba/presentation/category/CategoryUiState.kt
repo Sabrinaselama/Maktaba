@@ -11,3 +11,4 @@ data class CategoryUiState(
     val isLoading: Boolean = false,
     val errorMessage: String? = null
 )
+
