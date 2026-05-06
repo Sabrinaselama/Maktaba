@@ -1,8 +1,9 @@
 package com.ElOuedUniv.maktaba.presentation.book
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Menu
@@ -12,9 +13,12 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import coil.compose.AsyncImage
 import com.ElOuedUniv.maktaba.data.model.Book
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -69,79 +73,66 @@ fun BookListView(
                         modifier = Modifier.align(Alignment.Center)
                     )
                 } else {
-                    BookList(
-                        books = uiState.books,
-                        onBookClick = onBookClick,
+                    LazyVerticalGrid(
+                        columns = GridCells.Fixed(2),
+                        contentPadding = PaddingValues(16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(16.dp),
                         modifier = Modifier.fillMaxSize()
-                    )
+                    ) {
+                        items(uiState.books) { book ->
+                            BookCard(book = book, onClick = { onBookClick(book.isbn) })
+                        }
+                    }
                 }
             }
         }
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BookList(
-    books: List<Book>,
-    onBookClick: (String) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    LazyColumn(
-        modifier = modifier,
-        contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        items(books) { book ->
-            BookItem(book = book, onClick = { onBookClick(book.isbn) })
-        }
-    }
-}
-
-@Composable
-fun BookItem(book: Book, onClick: () -> Unit) {
+fun BookCard(book: Book, onClick: () -> Unit) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
         onClick = onClick,
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(280.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-        ) {
-            Text(
-                text = book.title,
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold
+        Column {
+            AsyncImage(
+                model = book.imageUrl ?: "https://via.placeholder.com/150",
+                contentDescription = "Book Cover",
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(180.dp),
+                contentScale = ContentScale.Crop
             )
-            
-            Spacer(modifier = Modifier.height(8.dp))
-            
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-              ) {
-                Column {
+
+            Column(modifier = Modifier.padding(8.dp)) {
+                Text(
+                    text = book.title,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Text(
+                    text = "ISBN: ${book.isbn}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(modifier = Modifier.weight(1f))
+                Surface(
+                    color = if (book.status == "Finished") MaterialTheme.colorScheme.tertiaryContainer
+                    else MaterialTheme.colorScheme.secondaryContainer,
+                    shape = MaterialTheme.shapes.extraSmall
+                ) {
                     Text(
-                        text = "ISBN:",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Text(
-                        text = if (book.isbn.isEmpty()) "Not set" else book.isbn,
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                }
-                
-                Column(horizontalAlignment = Alignment.End) {
-                    Text(
-                        text = "Pages:",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Text(
-                        text = if (book.nbPages == 0) "Not set" else "${book.nbPages}",
-                        style = MaterialTheme.typography.bodyMedium
+                        text = book.status,
+                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                        style = MaterialTheme.typography.labelSmall
                     )
                 }
             }
@@ -163,12 +154,6 @@ fun EmptyBooksMessage(modifier: Modifier = Modifier) {
         Text(
             text = "No books in your library",
             style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        Text(
-            text = "Click the + button to add a new book",
-            style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
     }

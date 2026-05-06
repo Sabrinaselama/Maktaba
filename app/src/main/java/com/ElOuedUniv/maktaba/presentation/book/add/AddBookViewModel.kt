@@ -13,7 +13,7 @@ import javax.inject.Inject
 class AddBookViewModel @Inject constructor(
     private val addBookUseCase: AddBookUseCase
 ) : ViewModel() {
-    
+
     private val _uiState = MutableStateFlow(AddBookUiState())
     val uiState = _uiState.asStateFlow()
 
@@ -28,6 +28,9 @@ class AddBookViewModel @Inject constructor(
             is AddBookUiAction.OnPagesChange -> {
                 _uiState.update { it.copy(nbPages = action.pages) }
             }
+            is AddBookUiAction.OnImageSelected -> {
+                _uiState.update { it.copy(imageUrl = action.uri) }
+            }
             AddBookUiAction.OnAddClick -> {
                 addBook()
             }
@@ -39,7 +42,9 @@ class AddBookViewModel @Inject constructor(
         val book = Book(
             isbn = currentState.isbn,
             title = currentState.title,
-            nbPages = currentState.nbPages.toIntOrNull() ?: 0
+            nbPages = currentState.nbPages.toIntOrNull() ?: 0,
+            imageUrl = currentState.imageUrl,
+                    status = "To Read"
         )
         addBookUseCase(book)
         _uiState.update { it.copy(isSuccess = true) }
